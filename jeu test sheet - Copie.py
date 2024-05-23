@@ -3,12 +3,12 @@ import random
 import sys
 import time
 
-
+ 
 pygame.init()
 
 
 # Couleur bleue pour le texte de la batterie
-couleur_bleue = (250, 250, 250)
+couleur_bleue = (0, 0, 255)
 
 
 # Définir les dimensions de l'écran
@@ -48,7 +48,7 @@ while running:
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if image_start.get_rect(topleft=pos_start).collidepoint(event.pos):
                 print("Démarrage du jeu...")
-                # Ici vous pouvez mettre le code pour démarrer votre jeu
+               
                 running = False
             elif image_quit.get_rect(topleft=pos_quit).collidepoint(event.pos):
                 print("Quitter le jeu...")
@@ -61,8 +61,8 @@ while running:
 image_background = pygame.image.load("background.jpeg")
 image_porte_lumiere = pygame.image.load("image_porte_lumiere.png")
 image_porte_fermee = pygame.image.load("image_porte_fermee.png")
-image_porte_fermee1 = pygame.image.load("image_porte_fermee1.png")
 image_porte_lumiere1 = pygame.image.load("image_porte_lumiere1.png")
+image_porte_fermee1 = pygame.image.load("image_porte_fermee1.png")
 image_personnage1 = pygame.image.load("personnage1.png")
 image_personnage2 = pygame.image.load("personnage2.png")
 image_personnage3 = pygame.image.load("personnage3.png")
@@ -72,12 +72,10 @@ image_bouton_bleu1 = pygame.image.load("bouton_bleu1.png")
 image_bouton_rouge1 = pygame.image.load("bouton_rouge1.png")
 image_imagedefin = pygame.image.load("imagedefin.png")
 image_perdu = pygame.image.load("imageperdu.png")
-image_porte_normale = pygame.image.load("image_porte_normale.png")  # Ajout de l'image normale de la porte
-# Charger l'image
-imagecarte = pygame.image.load("carte.png")
+image_porte_normale = pygame.image.load("image_porte_normale.png")  
+image_porte_normale1 = pygame.image.load("image_porte_normale1.png")  
 # Charger l'image sourireporte
 image_sourireporte = pygame.image.load("sourireporte.png")
-
 
 # Charger les images des caméras
 images_cameras = {
@@ -88,7 +86,7 @@ images_cameras = {
     5: pygame.image.load("imagebg5.png"),
 }
 
-camera_active = None  # ou une valeur initiale appropriée
+camera_active = None 
 
 if camera_active is not None:
     image_fond_active = images_cameras[camera_active]
@@ -96,11 +94,45 @@ else:
     image_fond_active = None
 
     etats_cameras = {1: False, 2: False, 3: False, 4: False, 5: False}
-camera_active = None  # ou une valeur initiale appropriée
+camera_active = None  
 
-# toogle la cam
+
+
+# Définition de la fonction update_personnages_visibles
+def update_personnages_visibles():
+    global camera_active, image_porte_lumiere_active, personnages_visibles
+
+    # Réinitialiser les personnages visibles pour la caméra active
+    if camera_active is not None:
+        personnages_visibles[camera_active] = set()
+
+        for personnage, pos in personnage_pos.items():
+            if pos == porte1_pos or pos == porte2_pos:
+                if image_porte_lumiere_active:
+                    personnages_visibles[camera_active].add(personnage)
+            elif pos in positions_cameras[camera_active]:
+                personnages_visibles[camera_active].add(personnage)
+
+if camera_active is not None:
+    image_fond_active = globals()[f"image_bg{camera_active}"]
+else:
+    image_fond_active = None
+
+
+# Modifier la fonction toggle_camera
 def toggle_camera(numero_camera):
-    global etats_cameras, camera_active
+    global is_cameras_activees, etats_cameras, camera_active
+    print(numero_camera)
+    # Si les caméras sont désactivées globalement, ne pas changer l'état de la caméra individuelle
+    if not is_cameras_activees:
+        return
+    
+    #Désactiver les caméras
+    for element in etats_cameras:
+        if element != numero_camera:
+            etats_cameras[element] = False
+
+    
 
     # Basculez l'état de la caméra
     etats_cameras[numero_camera] = not etats_cameras[numero_camera]
@@ -109,10 +141,26 @@ def toggle_camera(numero_camera):
     if etats_cameras[numero_camera]:
         camera_active = numero_camera
     else:
-        # Si la caméra est maintenant fermée, désactivez-la
-        camera_active = None
+        camera_active = None  # Désactivez la caméra si elle était précédemment active
+    
+    update_personnages_visibles()  # Assurez-vous d'appeler cette fonction si elle n'est pas déjà présente
 
-    update_personnages_visibles()  # Ajoutez cette fonction si elle n'est pas déjà présente
+# État global des caméras
+is_cameras_activees = False
+
+# Chargement de l'image du bouton activecam
+image_activecam = pygame.image.load("activecam.png")
+
+# Position du bouton activecam
+pos_activecam = pygame.Rect(1300, 820, 250, 250)
+
+# Fonction pour afficher le bouton activecam
+def afficher_bouton_activecam():
+    fenetre.blit(image_activecam, pos_activecam)
+
+# Définir un compteur pour suivre le nombre de clics sur le bouton activecam
+nombre_clics_activecam = 0
+
 
 
 # Charger les images des boutons
@@ -142,11 +190,11 @@ personnage_pos = {
 
 
 # Définir les positions initiales
-bouton1_pos = (1400, 850)
-bouton2_pos = (1300, 900)
-bouton3_pos = (1450, 900)
-bouton4_pos = (1330, 950)
-bouton5_pos = (1450, 950)  # Déplacer les boutons vers le bas
+bouton1_pos = (1600, 650)
+bouton2_pos = (1750, 750)
+bouton3_pos = (1450, 750)
+bouton4_pos = (1450, 880)
+bouton5_pos = (1750, 880)  # Déplacer les boutons vers le bas
 
 # Définir les positions initiales des caméras
 positions_cameras = {
@@ -160,12 +208,46 @@ positions_cameras = {
 # Définir les positions initiales
 background_pos = (0, 0)
 porte1_pos = (0, 0)
-porte2_pos = (0, 0)
+porte2_pos = (1500, 200)
 personnage_pos = {1: (2000, 2000), 2: (2000, 2000), 3: (2000, 2000)}
 bouton_bleu_pos = (1800, 450)
 bouton_rouge_pos = (1800, 580)
-bouton_bleu1_pos = (0, 450)
-bouton_rouge1_pos = (0, 580)
+bouton_bleu1_pos = (400, 450)
+bouton_rouge1_pos = (400, 580)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#DEPLACER LESW BOUTONS 1
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # Afficher les images des boutons
@@ -184,11 +266,17 @@ bouton_bleu_rect = pygame.Rect(bouton_bleu_pos, (image_bouton_bleu.get_width(), 
 bouton_rouge_rect = pygame.Rect(bouton_rouge_pos, (image_bouton_rouge.get_width(), image_bouton_rouge.get_height()))
 bouton_bleu1_rect = pygame.Rect(bouton_bleu1_pos, (image_bouton_bleu1.get_width(), image_bouton_bleu1.get_height()))
 bouton_rouge1_rect = pygame.Rect(bouton_rouge1_pos, (image_bouton_rouge1.get_width(), image_bouton_rouge1.get_height()))
-bouton1_rect = pygame.Rect(bouton1_pos, (60, 60))
-bouton2_rect = pygame.Rect(bouton2_pos, (60, 60))
-bouton3_rect = pygame.Rect(bouton3_pos, (60, 60))
-bouton4_rect = pygame.Rect(bouton4_pos, (60, 60))
-bouton5_rect = pygame.Rect(bouton5_pos, (60, 60))
+bouton1_rect = pygame.Rect(bouton1_pos, (image_bouton_bleu.get_width(), image_bouton_bleu.get_height()))
+bouton2_rect = pygame.Rect(bouton2_pos, (image_bouton_bleu.get_width(), image_bouton_bleu.get_height()))
+bouton3_rect = pygame.Rect(bouton3_pos, (image_bouton_bleu.get_width(), image_bouton_bleu.get_height()))
+bouton4_rect = pygame.Rect(bouton4_pos, (image_bouton_bleu.get_width(), image_bouton_bleu.get_height()))
+bouton5_rect = pygame.Rect(bouton5_pos, (image_bouton_bleu.get_width(), image_bouton_bleu.get_height()))
+
+# Créer un rectangle de collision pour le bouton activecam
+# Créer un rectangle de collision pour le bouton activecam
+activecam_rect = pygame.Rect((pos_activecam.x, pos_activecam.y), image_activecam.get_size())
+
+
 
 
 # Initialiser les états
@@ -198,7 +286,6 @@ bouton_bleu_appuye = False
 bouton_rouge_appuye = False
 bouton_bleu1_appuye = False
 bouton_rouge1_appuye = False
-
 
 # Initialiser le temps imparti
 temps_debut = pygame.time.get_ticks()
@@ -228,19 +315,19 @@ temps_dernier_deplacement = pygame.time.get_ticks()
 # Initialiser les états des images
 image_porte_lumiere_active = False
 image_porte_fermee_active = False
-camera_active = None
 image_porte_lumiere1_active = False
 image_porte_fermee1_active = False
+camera_active = None
 
 
 # Initialiser les positions initiales des personnages
 personnage_pos = {1: bouton1_pos, 2: bouton1_pos, 3: bouton1_pos}
 
-#positions_initiales_des_personnages = {
-    #1: (1920 // 2, int(1080 // 4)),  # en haut au milieu
-    #2: (int(1920 // 4), int(1080 // 4)),  # en haut à gauche
-    #3: (int(3 * 1920 // 4), int(1080 // 4))  # en haut à droite
-#}
+positions_initiales_des_personnages = {
+    1: (1920 // 2, int(1080 // 4)),  # en haut au milieu
+    2: (int(1920 // 4), int(1080 // 4)),  # en haut à gauche
+    3: (int(3 * 1920 // 4), int(1080 // 4))  # en haut à droite
+}
 
 
 
@@ -276,27 +363,6 @@ masquage.fill(couleur_fond)
 
 
 
-# Définition de la fonction update_personnages_visibles
-def update_personnages_visibles():
-    global camera_active, image_porte_lumiere_active, personnages_visibles
-
-    # Réinitialiser les personnages visibles pour la caméra active
-    if camera_active is not None:
-        personnages_visibles[camera_active] = set()
-
-        for personnage, pos in personnage_pos.items():
-            if pos == porte1_pos or pos == porte2_pos:
-                if image_porte_lumiere_active:
-                    personnages_visibles[camera_active].add(personnage)
-            elif pos in positions_cameras[camera_active]:
-                personnages_visibles[camera_active].add(personnage)
-
-if camera_active is not None:
-    image_fond_active = globals()[f"image_bg{camera_active}"]
-else:
-    image_fond_active = None
-
-
 # Définir les dimensions de l'image imagedefin
 largeur_image_imagedefin = image_imagedefin.get_width()
 hauteur_image_imagedefin = image_imagedefin.get_height()
@@ -327,6 +393,24 @@ temps_debut_teleportation = None
 # Ajouter une variable pour suivre le temps d'arrivée du personnage à la porte
 temps_arrivee_porte = {1: None, 2: None, 3: None}
 
+# Ajouter une variable pour suivre l'état du bouton activecam
+activecam_active = False
+
+# Création de la variable afficher_camera
+afficher_camera = False
+
+# Ajouter une liste pour suivre l'état des caméras (ouverte ou fermée)
+cameras_ouvertes = [False, False, False, False, False]
+
+def afficher_boutons_cameras():
+    if activecam_active:
+        fenetre.blit(image_bouton_1, (bouton1_pos[0] - 20, bouton1_pos[1] - 20))
+        fenetre.blit(image_bouton_2, (bouton2_pos[0] - 20, bouton2_pos[1] - 20))
+        fenetre.blit(image_bouton_3, (bouton3_pos[0] - 20, bouton3_pos[1] - 20))
+        fenetre.blit(image_bouton_4, (bouton4_pos[0] - 20, bouton4_pos[1] - 20))
+        fenetre.blit(image_bouton_5, (bouton5_pos[0] - 20, bouton5_pos[1] - 20))
+
+
 # Boucle principale
 while True:
     for event in pygame.event.get():
@@ -336,6 +420,33 @@ while True:
         elif event.type == pygame.MOUSEBUTTONDOWN:
             mouse_x, mouse_y = pygame.mouse.get_pos()
 
+            if activecam_rect.collidepoint(mouse_x, mouse_y):
+                activecam_active = not activecam_active
+                # Ouvrir la caméra 1 lorsque activecam est activé
+                if activecam_active:
+                    cameras_ouvertes[0] = True
+                else:
+                    # Fermer toutes les caméras lorsque activecam est désactivé
+                    cameras_ouvertes = [False, False, False, False, False]
+
+                #Placer l'affichage des boutons de caméra à l'intérieur de la boucle pygame
+                afficher_boutons_cameras()
+
+                
+            # Gérer les clics sur les boutons des caméras uniquement si activecam est active
+            if activecam_active:
+        
+                # Gérer les clics sur les boutons 1 à 5
+                if bouton1_rect.collidepoint(mouse_x, mouse_y):
+                    toggle_camera(1)
+                elif bouton2_rect.collidepoint(mouse_x, mouse_y):
+                    toggle_camera(2)
+                elif bouton3_rect.collidepoint(mouse_x, mouse_y):
+                    toggle_camera(3)
+                elif bouton4_rect.collidepoint(mouse_x, mouse_y):
+                    toggle_camera(4)
+                elif bouton5_rect.collidepoint(mouse_x, mouse_y):
+                    toggle_camera(5)
             # Gestion du bouton bleu
             if bouton_bleu_rect.collidepoint(mouse_x, mouse_y):
                 if image_porte_lumiere_active:
@@ -350,34 +461,27 @@ while True:
                 else:
                     image_porte_fermee_active = True
 
-            
             # Gestion du bouton bleu1
-            if bouton_bleu1_rect.collidepoint(mouse_x, mouse_y):
+            if bouton_bleu_rect.collidepoint(mouse_x, mouse_y):
                 if image_porte_lumiere1_active:
                     image_porte_lumiere1_active = False
                 else:
                     image_porte_lumiere1_active = True
 
             # Gestion du bouton rouge1
-            elif bouton_rouge1_rect.collidepoint(mouse_x, mouse_y):
+            elif bouton_rouge_rect.collidepoint(mouse_x, mouse_y):
                 if image_porte_fermee1_active:
                     image_porte_fermee1_active = False
                 else:
                     image_porte_fermee1_active = True
 
-            # Gestion des boutons 1 à 5
-            elif bouton1_rect.collidepoint(mouse_x, mouse_y):
-                toggle_camera(1)
-            elif bouton2_rect.collidepoint(mouse_x, mouse_y):
-                toggle_camera(2)
-            elif bouton3_rect.collidepoint(mouse_x, mouse_y):
-                toggle_camera(3)
-            elif bouton4_rect.collidepoint(mouse_x, mouse_y):
-                toggle_camera(4)
-            elif bouton5_rect.collidepoint(mouse_x, mouse_y):
-                toggle_camera(5)
+            # Afficher les boutons des caméras uniquement si activecam est active
+            
+
+           
 
             update_personnages_visibles()  # Assurez-vous d'appeler cette fonction ici s'il n'est pas déjà appelé dans votre code
+    
 
     # Déplacer les personnages toutes les 15 secondes
     temps_actuel_millis = pygame.time.get_ticks()
@@ -412,11 +516,10 @@ while True:
     # Gérer les interactions des portes
     if bouton_bleu_appuye:
         porte1_ouverte = True
-  
+
     if bouton_bleu1_appuye:
         porte2_ouverte = True
 
-    update_personnages_visibles()
 
     # Mettre à jour le temps
     temps_actuel_millis = pygame.time.get_ticks()
@@ -428,7 +531,6 @@ while True:
         pygame.quit()
         sys.exit()
 
-    
 
     
     # Définir le facteur de consommation de base
@@ -485,11 +587,14 @@ while True:
             # Ajuster la décharge en fonction des actions spécifiques
             if image_porte_lumiere_active:
                 facteur_decharge = 3 * facteur_temps_decharge  # La batterie se décharge plus rapidement avec les lumières
+            elif image_porte_lumiere1_active:
+                facteur_decharge = 3 * facteur_temps_decharge  # La batterie se décharge plus rapidement avec les lumières
             elif camera_active is not None:
-                facteur_decharge = 5 * facteur_temps_decharge  # La batterie se décharge plus rapidement avec les caméras
-            elif not porte1_ouverte and not porte2_ouverte:
-                facteur_decharge = 3 * facteur_temps_decharge  # La batterie se décharge plus rapidement lorsque les portes sont fermées
-                
+                facteur_decharge = 3 * facteur_temps_decharge  # La batterie se décharge plus rapidement avec les caméras
+            elif image_porte_fermee_active:  # Ajoutez cette condition pour la gestion de la batterie lorsque l'image de la porte fermée est active
+                facteur_decharge = 3 * facteur_temps_decharge  # Batterie se décharge plus rapidement lorsque l'image de la porte fermée est active
+            elif image_porte_fermee1_active:  # Ajoutez cette condition pour la gestion de la batterie lorsque l'image de la porte fermée est active
+                facteur_decharge = 3 * facteur_temps_decharge  # Batterie se décharge plus rapidement lorsque l'image de la porte fermée est active
             else:
                 facteur_decharge = facteur_decharge_base
 
@@ -541,21 +646,18 @@ while True:
 
 
         # Afficher les portes et les boutons
-    if image_porte_fermee_active:
-        fenetre.blit(image_porte_fermee, porte1_pos)  # Afficher l'image fermée de la porte
-        fenetre.blit(image_porte_fermee, porte2_pos)  # Afficher l'image fermée de la porte
-
-    elif image_porte_lumiere_active:
+    if image_porte_lumiere_active:
         fenetre.blit(image_porte_lumiere, porte1_pos)  # Afficher l'image lumière de la porte
-        fenetre.blit(image_porte_lumiere, porte2_pos)  # Afficher l'image lumière de la porte
-
+        
+    elif image_porte_fermee_active:
+        fenetre.blit(image_porte_fermee, porte1_pos)  # Afficher l'image fermée de la porte
+    
     elif image_porte_lumiere1_active:
         
         fenetre.blit(image_porte_lumiere1, porte2_pos)  # Afficher l'image lumière de la porte
     elif image_porte_fermee1_active:
         
         fenetre.blit(image_porte_fermee1, porte2_pos)  # Afficher l'image fermée de la porte
-        
     else:
         fenetre.blit(image_porte_normale, porte1_pos)  # Afficher l'image normale de la porte
         fenetre.blit(image_porte_normale, porte2_pos)  # Afficher l'image normale de la porte
@@ -564,23 +666,38 @@ while True:
     fenetre.blit(image_bouton_bleu, bouton_bleu_pos)
     fenetre.blit(image_bouton_rouge, bouton_rouge_pos)
 
-            # Afficher les boutons
+        # Afficher les boutons
     fenetre.blit(image_bouton_bleu1, bouton_bleu1_pos)
     fenetre.blit(image_bouton_rouge1, bouton_rouge1_pos)
 
-
-    # Afficher les images "imagebg(numéro).png" en utilisant les coordonnées (0, 0)
-    if camera_active is not None:
+   # Afficher les images des caméras uniquement si activecam est active
+    if activecam_active and camera_active is not None:
         image_bg = images_cameras[camera_active]
-        fenetre.blit(image_bg, (50, 50))
+        # Récupérer les dimensions de l'image
+        largeur_image, hauteur_image = image_bg.get_size()
+
+        # Calculer les positions pour centrer l'image
+        x_image = (1920 - largeur_image) // 2
+        y_image = (1080 - hauteur_image) // 2
+
+        # Afficher l'image au centre de l'écran
+        fenetre.blit(image_bg, (x_image, y_image))
+
+
     
     # Afficher les boutons
-    fenetre.blit(image_bouton_1, (bouton1_pos[0] - 20, bouton1_pos[1] - 20))
-    fenetre.blit(image_bouton_2, (bouton2_pos[0] - 20, bouton2_pos[1] - 20))
-    fenetre.blit(image_bouton_3, (bouton3_pos[0] - 20, bouton3_pos[1] - 20))
-    fenetre.blit(image_bouton_4, (bouton4_pos[0] - 20, bouton4_pos[1] - 20))
-    fenetre.blit(image_bouton_5, (bouton5_pos[0] - 20, bouton5_pos[1] - 20))
-
+    #fenetre.blit(image_bouton_1, (bouton1_pos[0] - 20, bouton1_pos[1] - 20))
+    #fenetre.blit(image_bouton_2, (bouton2_pos[0] - 20, bouton2_pos[1] - 20))
+    #fenetre.blit(image_bouton_3, (bouton3_pos[0] - 20, bouton3_pos[1] - 20))
+    #fenetre.blit(image_bouton_4, (bouton4_pos[0] - 20, bouton4_pos[1] - 20))
+    #fenetre.blit(image_bouton_5, (bouton5_pos[0] - 20, bouton5_pos[1] - 20))
+    if activecam_active:
+        fenetre.blit(image_bouton_1, (bouton1_pos[0] - 20, bouton1_pos[1] - 20))
+        fenetre.blit(image_bouton_2, (bouton2_pos[0] - 20, bouton2_pos[1] - 20))
+        fenetre.blit(image_bouton_3, (bouton3_pos[0] - 20, bouton3_pos[1] - 20))
+        fenetre.blit(image_bouton_4, (bouton4_pos[0] - 20, bouton4_pos[1] - 20))
+        fenetre.blit(image_bouton_5, (bouton5_pos[0] - 20, bouton5_pos[1] - 20))
+        
 
     # Afficher le pourcentage de batterie
     font = pygame.font.Font(None, 36)
@@ -591,11 +708,11 @@ while True:
     if camera_active is not None:
         for personnage in personnages_visibles[camera_active]:
             if personnage == 1:
-                fenetre.blit(image_personnage1, (personnage_pos[1][0] - 1350, personnage_pos[1][1] - 800))
+                fenetre.blit(image_personnage1, (personnage_pos[1][0] - 1000, personnage_pos[1][1] - 600))
             elif personnage == 2:
-                fenetre.blit(image_personnage2, (personnage_pos[2][0] - 1350, personnage_pos[2][1] - 800))
+                fenetre.blit(image_personnage2, (personnage_pos[2][0] - 800, personnage_pos[2][1] - 650))
             elif personnage == 3:
-                fenetre.blit(image_personnage3, (personnage_pos[3][0] - 1350, personnage_pos[3][1] - 800))
+                fenetre.blit(image_personnage3, (personnage_pos[3][0] - 900, personnage_pos[3][1] - 550))
 
 
 
@@ -613,9 +730,9 @@ while True:
 
     texte_heure = font_heure.render(f"Heure: {textes[indice_texte]}", True, couleur_bleue)
     fenetre.blit(texte_heure, (largeur - texte_heure.get_width() - 10, 10))
-    
-    # Afficher l'image en (0, 0)
-    fenetre.blit(imagecarte, (0, 0))
+
+    # Dans la boucle principale, ajoutez l'affichage du bouton activecam
+    afficher_bouton_activecam()
 
 
      # Vérifier si un personnage est à la porte et qu'aucune caméra n'est active
@@ -624,15 +741,7 @@ while True:
             if pos == porte1_pos or pos == porte2_pos:
                 # Afficher l'image "sourireporte" si un personnage est à la porte et que la lumière de la porte est activée
                 if image_porte_lumiere_active:
-                    fenetre.blit(image_sourireporte, (0,0))  # Remplacez (100, 100) par la position appropriée
+                    fenetre.blit(image_sourireporte, (100, 100))  # Remplacez (100, 100) par la position appropriée
 
-    
-    porte_pos = (0, 0)
-    # Affichage de la porte avec la lumière
-    if image_porte_fermee_active:
-        fenetre.blit(image_porte_fermee, porte_pos)
-    if image_porte_lumiere_active:
-        fenetre.blit(image_porte_lumiere, porte_pos)
-        
     pygame.display.flip()
-    pygame.time.delay(100)  
+    pygame.time.delay(100) 

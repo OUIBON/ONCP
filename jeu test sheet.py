@@ -462,14 +462,14 @@ while True:
                     image_porte_fermee_active = True
 
             # Gestion du bouton bleu1
-            if bouton_bleu_rect.collidepoint(mouse_x, mouse_y):
+            if bouton_bleu1_rect.collidepoint(mouse_x, mouse_y):
                 if image_porte_lumiere1_active:
                     image_porte_lumiere1_active = False
                 else:
                     image_porte_lumiere1_active = True
 
             # Gestion du bouton rouge1
-            elif bouton_rouge_rect.collidepoint(mouse_x, mouse_y):
+            elif bouton_rouge1_rect.collidepoint(mouse_x, mouse_y):
                 if image_porte_fermee1_active:
                     image_porte_fermee1_active = False
                 else:
