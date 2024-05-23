@@ -628,11 +628,22 @@ while True:
 
     
     porte_pos = (0, 0)
+
     # Affichage de la porte avec la lumière
-    if image_porte_fermee_active:
-        fenetre.blit(image_porte_fermee, porte_pos)
     if image_porte_lumiere_active:
         fenetre.blit(image_porte_lumiere, porte_pos)
         
+    if image_porte_fermee_active:
+        fenetre.blit(image_porte_fermee, porte_pos)
+
+        
+    # Affichage de la porte avec la lumière
+    if image_porte_lumiere1_active:
+        fenetre.blit(image_porte_lumiere1, porte_pos)
+        
+    if image_porte_fermee1_active:
+        fenetre.blit(image_porte_fermee1, porte_pos)
+
+
     pygame.display.flip()
     pygame.time.delay(100)  
