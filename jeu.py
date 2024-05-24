@@ -231,7 +231,7 @@ image_porte_fermee_active = False
 camera_active = None
 image_porte_lumiere1_active = False
 image_porte_fermee1_active = False
-
+image_sourire_porte_active = False  # Variable pour l'image sourire porte
 
 # Initialiser les positions initiales des personnages
 personnage_pos = {1: bouton1_pos, 2: bouton1_pos, 3: bouton1_pos}
@@ -626,13 +626,24 @@ while True:
                 if image_porte_lumiere_active:
                     fenetre.blit(image_sourireporte, (0,0))  # Remplacez (100, 100) par la position appropriée
 
-    
+    # Logique pour définir l'activation de image_sourire_porte_active
+    image_sourire_porte_active = False  # Réinitialiser à chaque itération
+    if camera_active is None:
+        for personnage, pos in personnage_pos.items():
+            if pos == porte1_pos or pos == porte2_pos:
+                if image_porte_lumiere_active:
+                    image_sourire_porte_active = True
+
     porte_pos = (0, 0)
 
     # Affichage de la porte avec la lumière
     if image_porte_lumiere_active:
         fenetre.blit(image_porte_lumiere, porte_pos)
         
+    # Affichage de l'image sourire porte
+    if image_sourire_porte_active:
+        fenetre.blit(image_sourireporte, (0, 0))  # Remplacez (0, 0) par la position appropriée
+
     if image_porte_fermee_active:
         fenetre.blit(image_porte_fermee, porte_pos)
 
@@ -640,9 +651,14 @@ while True:
     # Affichage de la porte avec la lumière
     if image_porte_lumiere1_active:
         fenetre.blit(image_porte_lumiere1, porte_pos)
+
+    
         
     if image_porte_fermee1_active:
         fenetre.blit(image_porte_fermee1, porte_pos)
+
+
+
 
 
     pygame.display.flip()
