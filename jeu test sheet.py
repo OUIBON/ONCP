@@ -439,7 +439,7 @@ if jeu_lance and introduction_finie:
         if temps_actuel_millis - temps_debut >= temps_fin:
             fenetre.blit(image_imagedefin, imagedefin_pos)
             pygame.display.flip()
-            pygame.time.wait(3000)  # Attente de 3 secondes avant de quitter
+            pygame.time.wait(15000)  # Attente de 3 secondes avant de quitter
             pygame.quit()
             sys.exit()
 
